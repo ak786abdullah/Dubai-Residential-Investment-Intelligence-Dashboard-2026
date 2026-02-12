@@ -92,7 +92,7 @@ Exported the processed data to **Power BI** to build the interactive dashboard s
 - Add predictive modeling (**Time-Series Forecasting**) for 2027 price trends.
 
 ---
-**Author:** [Your Name]
+**Author:** Muhammad Abdullah 
 *Certified Data Analyst | Mathematician*
 
 
