@@ -1,21 +1,21 @@
-# 🏙️ Dubai Residential Investment Intelligence Dashboard (2026 Edition)
+#  Dubai Residential Investment Intelligence Dashboard (2026 Edition)
 
 ![Status](https://img.shields.io/badge/Status-Completed-success)
 ![Tools](https://img.shields.io/badge/Tools-Python%20|%20Pandas%20|%20PowerBI-blue)
 
-## 📖 Executive Summary
+##  Executive Summary
 This project is a comprehensive end-to-end data analytics solution designed to identify undervalued real estate investment opportunities in Dubai. 
 
 Instead of relying on aggregated reports, this project processes **raw government data** (10 million+ records) to engineer a custom **"Investment Score."** This score mathematically balances **Rental Yields** (Cash Flow) with **Sales Liquidity** (Exit Strategy) to highlight top-performing communities.
 
-## 📊 The Output (Power BI Dashboard)
+##  The Output (Power BI Dashboard)
 The final dashboard allows investors to:
 - Compare **Off-Plan vs. Ready** price spreads per square foot.
 - Visualize liquidity tiers across a geospatial map of Dubai.
 - Drill down into specific communities to see historical trends (2024-2026).
 - Identify high-yield areas using the "Investment Score" matrix.
 
-## 🛠️ The Data Pipeline (Methodology)
+##  The Data Pipeline (Methodology)
 
 The project was executed in **5 Technical Phases**:
 
@@ -64,7 +64,7 @@ Exported the processed data to **Power BI** to build the interactive dashboard s
 - **Libraries:** Pandas, NumPy, Matplotlib (for initial EDA), Regex.
 - **Visualization:** Microsoft Power BI.
 
-## 📂 Repository Structure
+##  Repository Structure
 
 ```text
 ├── Dashboard/
