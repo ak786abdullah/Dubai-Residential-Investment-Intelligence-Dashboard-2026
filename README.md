@@ -87,7 +87,7 @@ Exported the processed data to **Power BI** to build the interactive dashboard s
 │       └── transactions_cleaning.ipynb        # Cleaning pipeline for sales
 └── README.md
 ```
-## 🚀 Future Improvements
+##  Future Improvements
 - Integrate Mortgage data to calculate **Net Yield (ROI)**.
 - Add predictive modeling (**Time-Series Forecasting**) for 2027 price trends.
 
