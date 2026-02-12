@@ -59,7 +59,7 @@ Merged the Sales and Rental datasets to create new financial metrics:
 ### **Phase 5: Visualization**
 Exported the processed data to **Power BI** to build the interactive dashboard seen in the demo.
 
-## 💻 Tech Stack
+##  Tech Stack
 - **Language:** Python 3.10+
 - **Libraries:** Pandas, NumPy, Matplotlib (for initial EDA), Regex.
 - **Visualization:** Microsoft Power BI.
