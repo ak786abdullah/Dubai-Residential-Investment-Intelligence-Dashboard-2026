@@ -67,11 +67,22 @@ Exported the processed data to **Power BI** to build the interactive dashboard s
 ## 📂 Repository Structure
 
 ```text
-├── Data_Cleaning/
-│   ├── 01_Chunking_Script.py      # Handling the 9M row file
-│   ├── 02_Cleaning_Pipeline.ipynb # Cleaning & Imputation logic
-│   └── 03_Feature_Engineering.py  # Merging & Metrics calculation
 ├── Dashboard/
-│   └── Dubai_Investment_Dashboard.pbix # The Power BI file
-├── README.md
-└── Requirements.txt
+│   └── dubai_residential_dashboard.pbix       # The final Power BI Dashboard file
+├── Data/
+│   ├── Cleaned Data/
+│   │   ├── cleaned_rent_sample.csv            # Processed rental data
+│   │   └── cleaned_transactions_sample.csv    # Processed sales data
+│   └── Raw_Data_sample/
+│       ├── rent_2025_sample.csv               # Raw sample for testing
+│       └── transactions_2024_to_2025_sample.csv
+├── Notebooks/
+│   ├── Analysis Code/
+│   │   └── Data_analytic.ipynb                # Feature engineering & final metrics
+│   ├── Data Extraction From Large File Code/
+│   │   ├── rent_contracts.ipynb               # Chunking logic for 9M+ rows
+│   │   └── transaction.ipynb                  # Filtering logic for sales data
+│   └── Data cleaning code/
+│       ├── rent_cleaning.ipynb                # Cleaning pipeline for rent
+│       └── transactions_cleaning.ipynb        # Cleaning pipeline for sales
+└── README.md
