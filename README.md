@@ -23,9 +23,9 @@ Generic market reports give you averages. This project gives you **precision** �
 
 [![Dashboard Overview](Dashboard/dashboard_overview.png)](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/blob/f2dd79001373f158f5856c7f5f7075cb428396c2/Dashboard/Overview.png)
 
-> **Investment Score Matrix — Top Communities by Yield & Liquidity**
+> **Investment Score Matrix .**
 
-![Investment Score](Dashboard/investment_score.png)
+[![Investment Score](Dashboard/investment_score.png)](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/blob/72ac8b5788703cf58e7745fae9c3279e2a0ab650/Dashboard/investment%20score.png)
 
 > **Community Drill-Down — Historical Trends 2024–2026**
 
