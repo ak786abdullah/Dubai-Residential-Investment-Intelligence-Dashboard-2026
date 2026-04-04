@@ -19,7 +19,7 @@ Generic market reports give you averages. This project gives you **precision** �
 
 ## 📸 Dashboard Preview
 
-> **Market Overview — KPIs, Off-Plan vs Ready Spread, Liquidity Tiers**
+> **Market Overview — KPIs, Off-Plan vs Ready  Liquidity Tier**
 
 [![Dashboard Overview](Dashboard/dashboard_overview.png)](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/blob/f2dd79001373f158f5856c7f5f7075cb428396c2/Dashboard/Overview.png)
 
