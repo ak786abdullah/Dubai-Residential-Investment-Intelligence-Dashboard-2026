@@ -19,7 +19,7 @@ Generic market reports give you averages. This project gives you **precision** �
 
 ## 📸 Dashboard Preview
 
-> **Market Overview — KPIs, Off-Plan vs Ready  Liquidity Tier**
+> **Market Overview — KPIs, Off-Plan vs Ready Liquidity Tier - Community Drill-Down — Historical Trends 2024–2026**
 
 [![Dashboard Overview](Dashboard/dashboard_overview.png)](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/blob/f2dd79001373f158f5856c7f5f7075cb428396c2/Dashboard/Overview.png)
 
@@ -27,9 +27,9 @@ Generic market reports give you averages. This project gives you **precision** �
 
 [![Investment Score](Dashboard/investment_score.png)](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/blob/72ac8b5788703cf58e7745fae9c3279e2a0ab650/Dashboard/investment%20score.png)
 
-> **Community Drill-Down — Historical Trends 2024–2026**
+> **map**
 
-![Drill Down](Dashboard/community_drilldown.png)
+[![Drill Down](Dashboard/community_drilldown.png)](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/blob/043dde857b4c699c65ca8a187eba2bfc61b0e98b/Dashboard/map.png)
 
 *📥 Download the interactive `.pbix` file from the [Dashboard folder](Dashboard/) to explore filters and slicers yourself.*
 
