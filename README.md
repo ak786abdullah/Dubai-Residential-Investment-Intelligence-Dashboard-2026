@@ -26,7 +26,8 @@ Generic market reports give you averages. This project gives you **precision** â
 <img width="610" height="340" alt="Screenshot 2026-05-15 005225" src="https://github.com/user-attachments/assets/17d62576-30af-4a34-a90b-24f505f5fb6f" />
 
 > **map**
-<img width="605" height="339" alt="Screenshot 2026-05-15 005255" src="https://github.com/user-attachments/assets/572abd13-d28f-4055-bc13-db0c275122e6" />
+<img width="609" height="341" alt="Screenshot 2026-05-15 012719" src="https://github.com/user-attachments/assets/6944cfa8-af83-4c5c-ab5e-7e5263e1ba1b" />
+
 
 
 *ðŸ“¥ Download the interactive  to explore filters and slicers yourself.*
