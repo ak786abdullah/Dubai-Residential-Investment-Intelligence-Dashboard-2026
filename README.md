@@ -30,7 +30,7 @@ Generic market reports give you averages. This project gives you **precision** �
 
 
 
-*📥 Download the interactive Dashboard/dubai residential dashboaed.pbix to explore filters and slicers yourself.*
+*📥 Download the interactive [Dashboard/dubai residential dashboaed.pbix](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/blob/91c4d3eee8b839e9368f75232e703611df3a954f/Dashboard/dubai%20residential%20dashboaed.pbix) to explore filters and slicers yourself.*
 
 ---
 
