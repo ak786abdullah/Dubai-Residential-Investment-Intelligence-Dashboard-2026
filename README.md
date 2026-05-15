@@ -30,7 +30,7 @@ Generic market reports give you averages. This project gives you **precision** �
 
 
 
-*📥 Download the interactive  to explore filters and slicers yourself.*
+*📥 Download the interactive Dashboard/dubai residential dashboaed.pbix to explore filters and slicers yourself.*
 
 ---
 
