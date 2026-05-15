@@ -29,7 +29,7 @@ Generic market reports give you averages. This project gives you **precision** �
 <img width="605" height="339" alt="Screenshot 2026-05-15 005255" src="https://github.com/user-attachments/assets/572abd13-d28f-4055-bc13-db0c275122e6" />
 
 
-*📥 Download the interactive `.pbix` file from the Dashboard/dubai residential dashboaed.pbix to explore filters and slicers yourself.*
+*📥 Download the interactive  to explore filters and slicers yourself.*
 
 ---
 
