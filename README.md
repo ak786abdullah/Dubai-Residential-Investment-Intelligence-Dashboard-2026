@@ -193,7 +193,7 @@ Discarding a row solely because `price_per_sqft` looks wrong — when the underl
 ## Data Source
 
 Dubai Land Department (DLD) Open Data API
-[https://www.dubailand.gov.ae](https://www.dubailand.gov.ae)
+[https://www.dubailand.gov.ae](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035)
 
 API access requires registration and approval through the DLD integration team. Credentials are not included in this repository.
 
