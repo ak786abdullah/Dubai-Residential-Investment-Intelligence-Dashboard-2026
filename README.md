@@ -5,6 +5,16 @@
 
 ---
 
+## Dashboard Preview
+
+![Dashboard Overview](dashboard_overview.png)
+*KPI cards, MoM transaction trend, property type breakdown, and avg price/sqft by metro proximity — all driven by a live MySQL connection.*
+
+![Dashboard Map & Scatter](dashboard_map.png)
+*Top 10 areas by transaction volume plotted on a Bing Maps visual, with avg price/sqft by property type and room count.*
+
+---
+
 ## Project Overview
 
 This project demonstrates a complete data engineering and analytics workflow built entirely from scratch — from authenticated API extraction through to an interactive Power BI dashboard.
