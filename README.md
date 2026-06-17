@@ -205,4 +205,4 @@ API access requires registration and approval through the DLD integration team. 
 Junior Data Analyst | Dubai, UAE
 Open to Data Analyst opportunities in the UAE market.
 
-[LinkedIn](your-linkedin-url) · [GitHub](your-github-url)
+[LinkedIn](www.linkedin.com/in/muhammad-abdullah-a7861a3a2l) · [GitHub](your-github-url)
