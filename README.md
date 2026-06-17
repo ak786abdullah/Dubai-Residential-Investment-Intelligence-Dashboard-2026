@@ -9,7 +9,7 @@
 
 This project demonstrates a complete data engineering and analytics workflow built entirely from scratch — from authenticated API extraction through to an interactive Power BI dashboard.
 
-The data source is the **Dubai Land Department Open Data API**, which publishes residential property sales transactions across all seven emirates. The pipeline extracts, cleanses, transforms, and loads this data into a local MySQL data warehouse on a daily schedule, then surfaces it through a structured Power BI report.
+The data source is the **Dubai Land Department Open Data API**, which publishes residential property sales transactions across all seven emirates. The pipeline extracts, cleanses, transforms, and loads this data into a MySQL warehouse, then visualizes key insights in Power BI.
 
 ---
 
@@ -22,7 +22,7 @@ DLD REST API  ──►  Python ETL Pipeline  ──►  MySQL Database  ──�
 
 ### Phase 1 — Extraction (Delta Load)
 - Authenticates against the DLD API using OAuth2 client credentials flow, with token stored securely in a `.env` file
-- Implements **watermark-based delta loading**: reads the maximum `instance_date` from the existing master CSV, then pulls only records newer than that date — reducing daily sync time from ~60 minutes to ~3 seconds
+- Implements **watermark-based delta loading**: reads the maximum `instance_date` from the existing master CSV, then pulls only records newer than that date — reducing daily sync time from ~60 minutes to under 5 seconds
 - Includes automatic **WAF-compliant headers** and a configurable **token lifespan guard** (50-minute safe window) to handle long-running extractions without mid-run expiry
 - Paginates through results in descending date order and halts the moment an overlap with existing data is detected
 
@@ -31,7 +31,7 @@ DLD REST API  ──►  Python ETL Pipeline  ──►  MySQL Database  ──�
 - Filters for residential sales transactions only; excludes commercial sub-types (shops, offices)
 - Converts all ID columns to memory-efficient nullable integer types (`UInt8`, `UInt16`, `boolean`)
 - Imputes missing `property_sub_type_id` values using deterministic business rules by `property_type_id`
-- Imputes missing `rooms` values using **median-area proximity matching** — calculates the median `procedure_area` per known room category and assigns the nearest match to nulls (applied separately for Villas and Units)
+- Imputes missing `rooms` values using **median-area proximity matching** — calculates the median `procedure_area` per known room category and assigns the nearest match to nulls (applied separately per emirate)
 - Converts area from square metres to square feet; derives `price_per_sqft`
 - Runs a **3-step data quality pipeline** on `price_per_sqft`:
   1. Applies market-floor and market-ceiling bounds by property type (e.g. Units: AED 300–15,000/sqft)
@@ -180,13 +180,13 @@ Open Power BI Desktop → Get Data → MySQL Database → connect to `localhost/
 The DLD dataset grows daily. A full re-extraction on every run would be wasteful and fragile. Watermark-based delta sync keeps the daily runtime under 5 seconds regardless of total dataset size.
 
 **Why MEDIAN instead of AVERAGE for price/sqft?**
-Dubai's luxury segment produces extreme high-end outliers. MEDIAN is resistant to those extremes and gives a more representative figure for typical market participants. The IQR-capped column provides a secondary layer of protection.
+Dubai's luxury segment produces extreme high-end outliers. MEDIAN is resistant to those extremes and gives a more representative figure for typical market participants. The IQR-capped column provides a second safety net.
 
 **Why star schema instead of a flat table?**
-Dimension tables decouple descriptive attributes from the fact table, reduce storage, and make Power BI relationship management cleaner. Adding a new area or property type requires updating one lookup table, not re-processing the entire fact table.
+Dimension tables decouple descriptive attributes from the fact table, reduce storage, and make Power BI relationship management cleaner. Adding a new area or property type requires updating one lookup table, not re-loading the entire fact table.
 
 **Why forensic recovery before dropping rows?**
-Discarding a row solely because `price_per_sqft` looks wrong — when the underlying `price` and `area` are both valid — wastes real information. The pipeline attempts to recalculate from source columns first and only drops the row if the recalculated value is also out of bounds.
+Discarding a row solely because `price_per_sqft` looks wrong — when the underlying `price` and `area` are both valid — wastes real information. The pipeline attempts to recalculate from source columns before accepting the quality flag.
 
 ---
 
@@ -205,4 +205,4 @@ API access requires registration and approval through the DLD integration team. 
 Junior Data Analyst | Dubai, UAE
 Open to Data Analyst opportunities in the UAE market.
 
-[LinkedIn]www.linkedin.com/in/muhammad-abdullah-a7861a3a2l · [GitHub](your-github-url)
+[LinkedIn](https://www.linkedin.com/in/muhammad-abdullah-a7861a3a2l) · [GitHub](https://github.com/ak786abdullah)
