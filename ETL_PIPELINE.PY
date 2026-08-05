@@ -2,12 +2,6 @@
 # -----------------phase 1: data extraction and loading-----------------
 # -------------------------------------------------------------------------------------------------
 
-
-
-
-
-
-
 # Import necessary libraries
 import pandas as pd
 import numpy as np
@@ -20,142 +14,142 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# ---------------------------------------------------------
-# Step 1: Credentials and Endpoints
-# ---------------------------------------------------------
-CLIENT_ID = os.getenv("DLD_CLIENT_ID") # Provided by the integration team and stored securely in .env file
-CLIENT_SECRET = os.getenv("DLD_CLIENT_SECRET")  # Provided by the integration team and stored securely in .env file
-APP_IDENTIFIER = os.getenv("DLD_APP_IDENTIFIER") # Provided by the integration team and stored securely in .env file
+# # ---------------------------------------------------------
+# # Step 1: Credentials and Endpoints
+# # ---------------------------------------------------------
+# CLIENT_ID = os.getenv("DLD_CLIENT_ID") # Provided by the integration team and stored securely in .env file
+# CLIENT_SECRET = os.getenv("DLD_CLIENT_SECRET")  # Provided by the integration team and stored securely in .env file
+# APP_IDENTIFIER = os.getenv("DLD_APP_IDENTIFIER") # Provided by the integration team and stored securely in .env file
 
-TOKEN_URL = "https://stg-apis.data.dubai/secure/ssis/dubaiai/gatewaytoken/1.0.0/getAccessToken"
-DATA_URL = "https://stg-apis.data.dubai/open/dld/dld_transactions-open-api"
-MASTER_FILE = "dld_transactions_2024_onwards.csv" 
+# TOKEN_URL = "https://stg-apis.data.dubai/secure/ssis/dubaiai/gatewaytoken/1.0.0/getAccessToken"
+# DATA_URL = "https://stg-apis.data.dubai/open/dld/dld_transactions-open-api"
+# MASTER_FILE = "dld_transactions_2024_onwards.csv" 
 
-# ---------------------------------------------------------
-# Step 2: Request the Bearer Token according to the API's specifications
-# ---------------------------------------------------------
-def get_token():
-    headers = {
-        "Content-Type": "application/json",
-        "x-DDA-SecurityApplicationIdentifier": APP_IDENTIFIER
-    }
-    payload = {
-        "grant_type": "client_credentials",
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET
-    }
+# # ---------------------------------------------------------
+# # Step 2: Request the Bearer Token according to the API's specifications
+# # ---------------------------------------------------------
+# def get_token():
+#     headers = {
+#         "Content-Type": "application/json",
+#         "x-DDA-SecurityApplicationIdentifier": APP_IDENTIFIER
+#     }
+#     payload = {
+#         "grant_type": "client_credentials",
+#         "client_id": CLIENT_ID,
+#         "client_secret": CLIENT_SECRET
+#     }
     
-    response = requests.post(TOKEN_URL, json=payload, headers=headers)
-    if response.status_code == 200:
-        try:
-            return response.json().get("access_token")
-        except ValueError:
-            return None
-    return None
+#     response = requests.post(TOKEN_URL, json=payload, headers=headers)
+#     if response.status_code == 200:
+#         try:
+#             return response.json().get("access_token")
+#         except ValueError:
+#             return None
+#     return None
 
-# ---------------------------------------------------------
-# Step 2: Extraction with Auto-Refresh Logic - Fetch only new records since the last sync 
-# ---------------------------------------------------------
-def sync_new_data_only(initial_token):
-    # Setup our active token and track exactly when it was minted
-    active_token = initial_token
-    token_mint_time = time.time()
+# # ---------------------------------------------------------
+# # Step 2: Extraction with Auto-Refresh Logic - Fetch only new records since the last sync 
+# # ---------------------------------------------------------
+# def sync_new_data_only(initial_token):
+#     # Setup our active token and track exactly when it was minted
+#     active_token = initial_token
+#     token_mint_time = time.time()
 
-    # We will trigger a refresh after 50 minutes (50 * 60 seconds) to be safe
-    SAFE_LIFESPAN_SECONDS = 3000
+#     # We will trigger a refresh after 50 minutes (50 * 60 seconds) to be safe
+#     SAFE_LIFESPAN_SECONDS = 3000
 
-    headers = {
-        "Authorization": f"Bearer {active_token}",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "application/json",
-        "Connection": "keep-alive"
-    }
+#     headers = {
+#         "Authorization": f"Bearer {active_token}",
+#         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+#         "Accept": "application/json",
+#         "Connection": "keep-alive"
+#     }
     
-    DATE_COLUMN = "instance_date"
+#     DATE_COLUMN = "instance_date"
     
-    # 1. Establish the Watermark (The maximum date we already possess)
-    if os.path.exists(MASTER_FILE):
-        print(f"Reading existing database: {MASTER_FILE}...")
-        existing_df = pd.read_csv(MASTER_FILE, usecols=[DATE_COLUMN])
-        existing_df[DATE_COLUMN] = pd.to_datetime(existing_df[DATE_COLUMN])
+#     # 1. Establish the Watermark (The maximum date we already possess)
+#     if os.path.exists(MASTER_FILE):
+#         print(f"Reading existing database: {MASTER_FILE}...")
+#         existing_df = pd.read_csv(MASTER_FILE, usecols=[DATE_COLUMN])
+#         existing_df[DATE_COLUMN] = pd.to_datetime(existing_df[DATE_COLUMN])
         
-        last_known_date = existing_df[DATE_COLUMN].max()
-        print(f"Database is currently synced up to: {last_known_date}")
-    else:
-        # If no file exists, we default to the historical cutoff
-        print(f"No existing database found. Defaulting to historical cutoff: 2024-01-01")
-        last_known_date = pd.Timestamp('2024-01-01')
+#         last_known_date = existing_df[DATE_COLUMN].max()
+#         print(f"Database is currently synced up to: {last_known_date}")
+#     else:
+#         # If no file exists, we default to the historical cutoff
+#         print(f"No existing database found. Defaulting to historical cutoff: 2024-01-01")
+#         last_known_date = pd.Timestamp('2024-01-01')
 
-    page = 1
-    keep_fetching = True
-    new_records_added = 0
+#     page = 1
+#     keep_fetching = True
+#     new_records_added = 0
     
-    print("Pinging API for new records...")
+#     print("Pinging API for new records...")
     
-    while keep_fetching:
-        params = {
-            "page": page,
-            "pageSize": 1000, 
-            "order_by": DATE_COLUMN,
-            "order_dir": "desc" # Pull newest records first
-        }
+#     while keep_fetching:
+#         params = {
+#             "page": page,
+#             "pageSize": 1000, 
+#             "order_by": DATE_COLUMN,
+#             "order_dir": "desc" # Pull newest records first
+#         }
         
-        response = requests.get(DATA_URL, headers=headers, params=params)
+#         response = requests.get(DATA_URL, headers=headers, params=params)
         
-        if response.status_code == 200:
-            records = response.json().get("results", [])
-            if not records:
-                break
+#         if response.status_code == 200:
+#             records = response.json().get("results", [])
+#             if not records:
+#                 break
                 
-            page_df = pd.DataFrame(records)
-            page_df[DATE_COLUMN] = pd.to_datetime(page_df[DATE_COLUMN])
+#             page_df = pd.DataFrame(records)
+#             page_df[DATE_COLUMN] = pd.to_datetime(page_df[DATE_COLUMN])
             
-            # Find the oldest date on this specific API page
-            oldest_date_in_page = page_df[DATE_COLUMN].min()
+#             # Find the oldest date on this specific API page
+#             oldest_date_in_page = page_df[DATE_COLUMN].min()
             
-            # 2. Isolate ONLY the strictly new records by applying a boolean mask
-            new_data_mask = page_df[DATE_COLUMN] > last_known_date
-            strictly_new_df = page_df[new_data_mask]
+#             # 2. Isolate ONLY the strictly new records by applying a boolean mask
+#             new_data_mask = page_df[DATE_COLUMN] > last_known_date
+#             strictly_new_df = page_df[new_data_mask]
             
-            # 3. Append only the new records directly to the CSV
-            if not strictly_new_df.empty:
-                if not os.path.exists(MASTER_FILE):
-                    strictly_new_df.to_csv(MASTER_FILE, index=False)
-                else:
-                    strictly_new_df.to_csv(MASTER_FILE, mode='a', header=False, index=False)
+#             # 3. Append only the new records directly to the CSV
+#             if not strictly_new_df.empty:
+#                 if not os.path.exists(MASTER_FILE):
+#                     strictly_new_df.to_csv(MASTER_FILE, index=False)
+#                 else:
+#                     strictly_new_df.to_csv(MASTER_FILE, mode='a', header=False, index=False)
                 
-                new_records_added += len(strictly_new_df)
-                print(f"Page {page}: Appended {len(strictly_new_df)} new records.")
+#                 new_records_added += len(strictly_new_df)
+#                 print(f"Page {page}: Appended {len(strictly_new_df)} new records.")
             
-            # 4. The Logic Break: If the oldest date on this page overlaps with our history, STOP.
-            if oldest_date_in_page <= last_known_date:
-                print("Overlap detected with existing historical data. Sync complete.")
-                keep_fetching = False
-            else:
-                page += 1
-                time.sleep(1.5) # Respect the rate limit
+#             # 4. The Logic Break: If the oldest date on this page overlaps with our history, STOP.
+#             if oldest_date_in_page <= last_known_date:
+#                 print("Overlap detected with existing historical data. Sync complete.")
+#                 keep_fetching = False
+#             else:
+#                 page += 1
+#                 time.sleep(1.5) # Respect the rate limit
                 
-        else:
-            print(f"Failed on page {page}. Status Code: {response.status_code}")
-            break
+#         else:
+#             print(f"Failed on page {page}. Status Code: {response.status_code}")
+#             break
 
-    print(f"\n--- SYNC SUMMARY ---")
-    print(f"Total new records added: {new_records_added}")
+#     print(f"\n--- SYNC SUMMARY ---")
+#     print(f"Total new records added: {new_records_added}")
 
-# --- Main Execution ---
-if __name__ == "__main__":
-    access_token = get_token()
+# # --- Main Execution ---
+# if __name__ == "__main__":
+#     access_token = get_token()
 
-    if access_token:
-        print("Token secured! Initiating Delta Sync...")
-        sync_new_data_only(access_token)
+#     if access_token:
+#         print("Token secured! Initiating Delta Sync...")
+#         sync_new_data_only(access_token)
 
-# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# STEP 3: After the new data is fetched and stored in the CSV file, we will read it into a pandas dataframe for the next phase of the pipeline which is data cleansing and transformation.
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# # STEP 3: After the new data is fetched and stored in the CSV file, we will read it into a pandas dataframe for the next phase of the pipeline which is data cleansing and transformation.
+# # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # read the raw data files into a pandas dataframe and the lookup tables into separate dataframes
-data=pd.read_csv("dld_transactions_2024_onwards.csv")
+data=pd.read_csv("transactions_2026-08-04.csv")
 data1=pd.read_csv("lkp_areas.csv") 
 data2=pd.read_csv("lkp_property_sub_types.csv")
 data3=pd.read_csv("lkp_property_types.csv")
@@ -193,7 +187,11 @@ data = data[(data['property_usage_en'] == 'Residential') & (data['rooms_en'].isi
 data.drop(columns=['trans_group_en','trans_group_id','property_usage_en'], inplace=True)
 
 # RENAME COLUMNS
-data.rename(columns={'property_type_en':'property_type','reg_type_id':'status_id','building_name_en':'building_name','project_name_en':'project_name','master_project_en':'master_project','nearest_landmark_en':'nearest_landmark','nearest_metro_en':'nearest_metro','nearest_mall_en':'nearest_mall','instance_date':'transaction_date','actual_worth':'price','rooms_en':'rooms'}, inplace=True) 
+data.rename(columns={'property_type_en':'property_type','reg_type_id':'status_id','building_name_en':'building_name','project_name_en':'project_name','master_project_en':'master_project','nearest_landmark_en':'nearest_landmark','nearest_metro_en':'nearest_metro','nearest_mall_en':'nearest_mall','instance_date':'transaction_date','actual_worth':'price','rooms_en':'rooms'}, inplace=True)
+
+# we filter 2024 onwards data only because we want to analyze the most recent data and the older data is not relevant to our analysis.
+data['transaction_date'] = pd.to_datetime(data['transaction_date'], errors='coerce')
+data = data[data['transaction_date'].dt.year >= 2024]
 
 # ------------------------------------------------------------------------------------------------
 # STEP 2: DROP DUPLICATES  CHANGE DATA TYPES AND HANDLE MISSING VALUES
