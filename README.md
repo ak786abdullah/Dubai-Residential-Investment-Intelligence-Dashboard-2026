@@ -67,11 +67,54 @@ data.dubai Bulk CSV (2026) ─┘      (Pandas / SQLAlchemy)     (Star Schema)  
   3. Caps remaining statistical outliers using IQR fencing (Tukey method), per property type group
 - Deduplicates on `transaction_id` across the API and CSV sources so overlapping records are never double-counted
 
+**Dimension table generation**
+
+All five lookup tables share one reusable normalization pattern: select the ID + label columns, `drop_duplicates()` to get one row per unique value, then reset the index. Nulls are handled deliberately rather than silently dropped — ID columns are filled with `0` (an explicit "unknown" key) and label columns are filled with `"not provided"`, so every foreign key in the fact table always resolves to a row in its dimension table instead of failing a join.
+
+```python
+property_sub_type_lookup = (
+    data[['property_sub_type_id', 'property_sub_type']]
+    .drop_duplicates(keep='first')
+    .reset_index(drop=True)
+)
+
+property_sub_type_lookup['property_sub_type_id'] = property_sub_type_lookup['property_sub_type_id'].fillna(0)
+property_sub_type_lookup['property_sub_type'] = property_sub_type_lookup['property_sub_type'].fillna("not provided")
+
+property_sub_type_lookup.to_csv('property_sub_type_lookup.csv', index=False)
+```
+
+The same frame is reused for `lkp_areas`, `lkp_property_types`, `lkp_procedures`, and `lkp_statuses` — swap the column names and output filename, logic stays identical.
+
 ### Phase 3 — Loading (MySQL Data Warehouse)
 
 - Connects to a local MySQL instance via **SQLAlchemy**
 - Loads the cleansed fact table using `if_exists='replace'` for full daily refresh
 - Conditionally loads five lookup (dimension) tables only if they do not already exist — idempotent by design, safe to re-run daily without duplication
+
+**Enforcing referential integrity**
+
+`pandas.to_sql()` creates columns but doesn't enforce relationships, so the star schema is hardened with a one-time SQL pass after the first load: dimension and fact key columns are aligned to matching `INT` types, each dimension table gets an explicit primary key, and the fact table gets a foreign key constraint back to it. This turns "these columns are supposed to match" into something MySQL actually rejects if violated.
+
+```sql
+-- Align dimension and fact key types
+ALTER TABLE lkp_areas
+MODIFY area_id INT;
+
+ALTER TABLE cleaned_residential_real_estate_sale_data
+MODIFY area_id INT;
+
+-- Primary key on the dimension side
+ALTER TABLE lkp_statuses
+ADD PRIMARY KEY (status_id);
+
+-- Foreign key on the fact side
+ALTER TABLE cleaned_residential_real_estate_sale_data
+ADD CONSTRAINT fk_fact_status
+FOREIGN KEY (status_id) REFERENCES lkp_statuses(status_id);
+```
+
+The same pattern (type alignment → primary key → foreign key) is repeated for each of the five dimension tables.
 
 ---
 
@@ -226,6 +269,8 @@ Open Power BI Desktop → Get Data → MySQL Database → connect to `localhost/
 **Why star schema instead of a flat table?** Dimension tables decouple descriptive attributes from the fact table, reduce storage, and make Power BI relationship management cleaner. Adding a new area or property type requires updating one lookup table, not re-loading the entire fact table.
 
 **Why forensic recovery before dropping rows?** Discarding a row solely because `price_per_sqft` looks wrong — when the underlying `price` and `area` are both valid — wastes real information. The pipeline attempts to recalculate from source columns before accepting the quality flag.
+
+**Why add primary/foreign key constraints after load instead of relying on `to_sql()`?** `to_sql()` will happily create a fact table whose `area_id` doesn't actually match anything in `lkp_areas` — it has no concept of a relationship, only column names. Adding explicit PK/FK constraints post-load means a bad load fails loudly at the database level instead of silently producing orphaned rows that only show up as blank labels in Power BI weeks later.
 
 ---
 
