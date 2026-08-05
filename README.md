@@ -199,9 +199,8 @@ Total_Transactions   = DISTINCTCOUNT(cleaned_residential_real_estate_sale_data[t
 
 ```
 ├── etl_pipeline.py                     # Main ETL script (API extraction + transform + load)
-├── load_csv_bulk_2026.py               # ⚠ placeholder name — update to match your actual script
+├── transactions_2026-08-04.csv         # ⚠ placeholder name — update to match your actual script
 ├── dld_transactions_2024_onwards.csv   # Master raw data file, API source (gitignored)
-├── dld_transactions_bulk_export.csv    # ⚠ placeholder name — bulk CSV from data.dubai (gitignored)
 ├── lkp_areas.csv                       # Area dimension lookup
 ├── lkp_property_sub_types.csv          # Property sub-type lookup
 ├── lkp_property_types.csv              # Property type lookup
