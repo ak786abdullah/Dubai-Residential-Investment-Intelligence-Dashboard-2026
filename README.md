@@ -51,7 +51,6 @@ data.dubai Bulk CSV (2026) ─┘      (Pandas / SQLAlchemy)     (Star Schema)  
 - To close that gap, full transaction history — including 2026 — is downloaded directly as CSV from the [data.dubai](https://data.dubai) open data portal
 - The CSV is normalized to the same column structure and dtypes as the API extract before entering the shared transform stage, so downstream logic treats both sources identically
 
-> **File pending:** the CSV ingestion/normalization script referenced above hasn't come through in our conversation yet — only the description did. Once you share it (or the actual filename you're using), I'll tighten this section and the Setup & Usage steps below to match your real code exactly.
 
 ### Phase 2 — Transformation (Cleansing & Feature Engineering)
 
