@@ -6,6 +6,7 @@
 ---
 
 ## Dashboard Preview
+
 <img width="635" height="320" alt="Screenshot 2026-08-05 112117" src="https://github.com/user-attachments/assets/9cb4a4f5-15c1-4ac6-bce9-322276eeac0a" />
 
 *KPI cards, MoM transaction trend, property type breakdown, and avg price/sqft by metro proximity — all driven by a live MySQL connection.*
