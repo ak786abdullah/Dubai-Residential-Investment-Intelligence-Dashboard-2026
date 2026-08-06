@@ -1,7 +1,7 @@
 # Dubai Residential Real Estate — End-to-End Analytics Pipeline
 
-> **Live API + Bulk CSV → Python ETL → MySQL Data Warehouse → Power BI Dashboard**
-> A fully automated, production-grade analytics system built on Dubai Land Department (DLD) transaction data, covering 2024–2026.
+> **Bulk CSV → Python ETL → MySQL Data Warehouse → Power BI Dashboard**
+> A production-grade analytics system built on Dubai Land Department (DLD) transaction data, covering 2024–2026.
 
 ---
 
@@ -17,40 +17,40 @@
 
 ## Project Overview
 
-This project demonstrates a complete data engineering and analytics workflow built entirely from scratch — from authenticated API extraction and bulk historical ingestion through to an interactive Power BI dashboard.
+This project demonstrates a complete data engineering and analytics workflow built entirely from scratch — from data extraction through to an interactive Power BI dashboard.
 
-The primary data source is the **Dubai Land Department (DLD) Open Data API**. During development I confirmed this endpoint is a **test/sandbox environment provided by data.dubai** — it returns valid, well-formed data, but only for the window **January 2024 – December 2025**. It does not yet expose 2026 transactions.
+The pipeline was originally built against the **Dubai Land Department (DLD) Open Data API** (OAuth2 auth, watermark-based delta loading). While validating 2026 coverage, I found that this endpoint is a **test/sandbox environment provided by data.dubai** — it returns valid, well-formed data, but only for the window **January 2024 – December 2025**. It does not expose 2026 transactions at all.
 
-To keep the dashboard current through 2026, the pipeline now ingests from **two sources into the same warehouse**:
+To get complete, accurate coverage across 2024–2026, I downloaded the **entire historical transaction dataset as a single bulk CSV export directly from data.dubai**, and reran the ETL pipeline against that file **instead of the API**. The CSV is normalized to the same schema as the original API extract, so it flows through the exact same cleaning, feature-engineering, and star-schema loading logic — the transform and load phases don't know or care that the input changed.
 
-1. **DLD API** (OAuth2, watermark delta-load) — 2024–2025 transaction history, refreshed incrementally
-2. **Bulk CSV export from data.dubai** — full historical + 2026 transactions, downloaded directly from the [data.dubai](https://data.dubai) open data portal
-
-Both paths run through the same cleaning, feature-engineering, and star-schema loading logic, so the fact table stays consistent regardless of which source a given transaction came from.
+The API extraction code (OAuth2 auth, watermark delta-load) is **still in the repo and still functional** — it's just not what populated the current warehouse. It's kept as the intended path for automated incremental refreshes once the account has access to a live (non-sandbox) feed.
 
 ---
 
 ## Architecture
 
 ```
-DLD REST API (2024–2025)  ─┐
-   (OAuth2, delta-load)     ├──►  Python ETL Pipeline  ──►  MySQL Database  ──►  Power BI Dashboard
-data.dubai Bulk CSV (2026) ─┘      (Pandas / SQLAlchemy)     (Star Schema)        (DAX Measures)
+Currently used:
+data.dubai Bulk CSV (2024–2026, full history)  ──►  Python ETL Pipeline  ──►  MySQL Database  ──►  Power BI Dashboard
+                                                       (Pandas / SQLAlchemy)     (Star Schema)        (DAX Measures)
+
+Implemented, not currently active:
+DLD REST API (OAuth2, watermark delta-load, 2024–2025 only) ──► same ETL pipeline
 ```
 
-### Phase 1 — Extraction (Dual Source)
+### Phase 1 — Extraction
 
-**API path (delta load, 2024–2025)**
+**Current run: full-history CSV reload**
+- The DLD API is a test/sandbox endpoint capped at December 2025; it does not surface current-year transactions
+- The complete historical dataset (2024 through the present) was downloaded directly as a CSV export from the [data.dubai](https://data.dubai) open data portal
+- The pipeline was rerun end-to-end against this file in place of the API call, giving a single, internally consistent 2024–2026 dataset
+
+**API path (implemented, available for future incremental syncs)**
 - Authenticates against the DLD API using OAuth2 client credentials flow, with token stored securely in a `.env` file
-- Implements **watermark-based delta loading**: reads the maximum `instance_date` from the existing master CSV, then pulls only records newer than that date — reducing daily sync time from ~60 minutes to under 5 seconds
+- Implements **watermark-based delta loading**: reads the maximum `instance_date` from the existing master CSV, then pulls only records newer than that date — reducing sync time from ~60 minutes to under 5 seconds when in use
 - Includes automatic **WAF-compliant headers** and a configurable **token lifespan guard** (50-minute safe window) to handle long-running extractions without mid-run expiry
 - Paginates through results in descending date order and halts the moment an overlap with existing data is detected
-
-**Bulk CSV path (2026 coverage)**
-- The DLD API is a test/sandbox endpoint capped at December 2025; it does not surface current-year transactions
-- To close that gap, full transaction history — including 2026 — is downloaded directly as CSV from the [data.dubai](https://data.dubai) open data portal
-- The CSV is normalized to the same column structure and dtypes as the API extract before entering the shared transform stage, so downstream logic treats both sources identically
-
+- Not currently used for the live warehouse, since it can't reach 2026 data — retained for when that changes
 
 ### Phase 2 — Transformation (Cleansing & Feature Engineering)
 
@@ -64,7 +64,6 @@ data.dubai Bulk CSV (2026) ─┘      (Pandas / SQLAlchemy)     (Star Schema)  
   1. Applies market-floor and market-ceiling bounds by property type (e.g. Units: AED 300–15,000/sqft)
   2. Attempts forensic recovery on flagged rows by recalculating `price_per_sqft` from raw price and area before discarding them
   3. Caps remaining statistical outliers using IQR fencing (Tukey method), per property type group
-- Deduplicates on `transaction_id` across the API and CSV sources so overlapping records are never double-counted
 
 **Dimension table generation**
 
@@ -88,8 +87,8 @@ The same frame is reused for `lkp_areas`, `lkp_property_types`, `lkp_procedures`
 ### Phase 3 — Loading (MySQL Data Warehouse)
 
 - Connects to a local MySQL instance via **SQLAlchemy**
-- Loads the cleansed fact table using `if_exists='replace'` for full daily refresh
-- Conditionally loads five lookup (dimension) tables only if they do not already exist — idempotent by design, safe to re-run daily without duplication
+- Loads the cleansed fact table using `if_exists='replace'` for a full refresh
+- Conditionally loads five lookup (dimension) tables only if they do not already exist — idempotent by design, safe to re-run without duplication
 
 **Enforcing referential integrity**
 
@@ -140,14 +139,14 @@ The same pattern (type alignment → primary key → foreign key) is repeated fo
 **Fact table key columns:**
 
 | Column                  | Type    | Description                        |
-| ----------------------- | ------- | ---------------------------------- |
+| ----------------------- | ------- | ----------------------------------- |
 | `transaction_id`        | VARCHAR | Unique transaction identifier      |
 | `transaction_date`      | DATE    | Date of the sale                   |
 | `price`                 | DECIMAL | Total transaction value (AED)      |
 | `property_size_sqft`    | DECIMAL | Property size in square feet       |
 | `price_per_sqft`        | DECIMAL | Derived price per square foot      |
 | `price_per_sqft_capped` | DECIMAL | IQR-capped version used in visuals |
-| `area_id`               | UINT16  | FK → lkp_areas                     |
+| `area_id`               | INT     | FK → lkp_areas                     |
 | `property_type_id`      | UINT8   | FK → lkp_property_types            |
 | `property_sub_type_id`  | UINT8   | FK → lkp_property_sub_types        |
 | `procedure_id`          | UINT16  | FK → lkp_procedures                |
@@ -156,7 +155,6 @@ The same pattern (type alignment → primary key → foreign key) is repeated fo
 | `has_nearest_metro`     | BOOLEAN | Proximity to metro flag            |
 | `has_nearest_landmark`  | BOOLEAN | Proximity to landmark flag         |
 | `has_nearest_mall`      | BOOLEAN | Proximity to mall flag             |
-| `source`                | VARCHAR | Origin of the record: `api` or `csv_bulk` |
 
 ---
 
@@ -198,9 +196,8 @@ Total_Transactions   = DISTINCTCOUNT(cleaned_residential_real_estate_sale_data[t
 ## Project Structure
 
 ```
-├── etl_pipeline.py                     # Main ETL script (API extraction + transform + load)
-├── transactions_2026-08-04.csv         # ⚠ placeholder name — update to match your actual script
-├── dld_transactions_2024_onwards.csv   # Master raw data file, API source (gitignored)
+├── etl_pipeline.py                     # Main ETL script (extraction + transform + load)
+├── dld_transactions_2024_onwards.csv   # Master raw data file — currently the full 2024–2026 bulk CSV from data.dubai (gitignored)
 ├── lkp_areas.csv                       # Area dimension lookup
 ├── lkp_property_sub_types.csv          # Property sub-type lookup
 ├── lkp_property_types.csv              # Property type lookup
@@ -227,7 +224,7 @@ Total_Transactions   = DISTINCTCOUNT(cleaned_residential_real_estate_sale_data[t
 pip install pandas numpy sqlalchemy pymysql python-dotenv requests
 ```
 
-**Configure credentials**
+**Configure credentials** (only needed if you plan to use the API path)
 
 Create a `.env` file in the project root:
 
@@ -238,9 +235,9 @@ DLD_APP_IDENTIFIER=your_app_identifier
 MYSQL_PASSWORD=your_mysql_password
 ```
 
-**Get the 2026 data**
+**Get the data (current method: full CSV reload)**
 
-Download the latest bulk transaction export from [data.dubai](https://data.dubai) and place it in the project root. This is a manual step since the DLD API test endpoint does not yet serve 2026 records.
+Download the complete transaction history (2024–2026) as a bulk CSV export from [data.dubai](https://data.dubai) and save it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
 
 **Run the pipeline**
 
@@ -248,7 +245,7 @@ Download the latest bulk transaction export from [data.dubai](https://data.dubai
 python etl_pipeline.py
 ```
 
-The API portion is safe to run daily — it automatically detects the last sync date and only pulls new records (through Dec 2025). Re-run the CSV ingestion step whenever you refresh the bulk export to bring in newer 2026 transactions.
+Currently this reads from the bulk CSV export rather than calling the API. Re-run it whenever you download a fresh CSV export to pick up newer transactions. The API extraction path is still in the codebase and safe to run on its own once a live (non-sandbox) endpoint is available — it will pick up automatically from the last synced date.
 
 **Connect Power BI**
 
@@ -258,9 +255,9 @@ Open Power BI Desktop → Get Data → MySQL Database → connect to `localhost/
 
 ## Key Engineering Decisions
 
-**Why delta loading instead of full refresh?** The DLD dataset grows daily. A full re-extraction on every run would be wasteful and fragile. Watermark-based delta sync keeps the daily runtime under 5 seconds regardless of total dataset size.
+**Why delta loading instead of full refresh (API path)?** The DLD dataset grows daily. A full re-extraction on every run would be wasteful and fragile. Watermark-based delta sync keeps sync time under 5 seconds regardless of total dataset size — this is why the logic is being kept even though it's not driving the warehouse right now.
 
-**Why add a second, CSV-based ingestion path?** The DLD API turned out to be a test/sandbox environment scoped to 2024–2025 — a limitation that isn't documented up front and only surfaced once I profiled the returned date ranges. Rather than ship a dashboard advertised as "2024–2026" that quietly stops in 2025, I added a bulk CSV path sourced directly from data.dubai to cover the gap, normalized to the same schema so the rest of the pipeline doesn't need to know which source a row came from.
+**Why switch to a full-history CSV reload instead of patching in just 2026?** The DLD API turned out to be a test/sandbox environment scoped to 2024–2025 — a limitation that isn't documented up front and only surfaced once I profiled the returned date ranges. Rather than reconcile two partial, independently-sourced ranges against each other, I downloaded the complete 2024–2026 history as one bulk CSV from data.dubai and reran the full pipeline against it. One internally consistent source beats stitching two partial ones together.
 
 **Why MEDIAN instead of AVERAGE for price/sqft?** Dubai's luxury segment produces extreme high-end outliers. MEDIAN is resistant to those extremes and gives a more representative figure for typical market participants. The IQR-capped column provides a second safety net.
 
@@ -274,8 +271,8 @@ Open Power BI Desktop → Get Data → MySQL Database → connect to `localhost/
 
 ## Data Source
 
-- **Dubai Land Department (DLD) Open Data API** — test/sandbox endpoint, 2024–2025 coverage. Access requires registration and approval through the DLD integration team; credentials are not included in this repository.
-- **data.dubai Open Data Portal** — bulk CSV export used to extend coverage through 2026: [https://data.dubai](https://data.dubai)
+- **data.dubai Open Data Portal** — full historical bulk CSV export (2024–2026), the current source for the fact table: [https://data.dubai](https://data.dubai)
+- **Dubai Land Department (DLD) Open Data API** — test/sandbox endpoint, 2024–2025 coverage only. Implemented and functional, but not currently used since it can't reach 2026 data. Access requires registration and approval through the DLD integration team; credentials are not included in this repository.
 
 ---
 
