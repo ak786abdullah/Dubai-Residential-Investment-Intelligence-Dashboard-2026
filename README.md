@@ -1,3 +1,5 @@
+<img width="624" height="344" alt="Screenshot 2026-08-05 112149" src="https://github.com/user-attachments/assets/e2875c96-74f4-4d2f-a393-e2c902962baa" />
+<img width="635" height="320" alt="Screenshot 2026-08-05 112117" src="https://github.com/user-attachments/assets/afe19931-c9aa-4aa1-8a60-2e49cbe1bdd3" />
 # Dubai Residential Real Estate — End-to-End Analytics Pipeline
 
 > **Bulk CSV → Python ETL → MySQL Data Warehouse → Power BI Dashboard**
