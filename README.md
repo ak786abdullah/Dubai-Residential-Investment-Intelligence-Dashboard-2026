@@ -44,7 +44,7 @@ DLD REST API (OAuth2, watermark delta-load, 2024–2025 only) ──► same ETL
 
 **Current run: full-history CSV reload**
 - The DLD API is a test/sandbox endpoint capped at December 2025; it does not surface current-year transactions
-- The complete historical dataset (2024 through the present) was downloaded directly as a CSV export from the [data.dubai](https://data.dubai) open data portal
+- The complete historical dataset (2024 through the present) was downloaded directly as a CSV export from the [data.dubai]([https://data.dubai](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035)) open data portal
 - The pipeline was rerun end-to-end against this file in place of the API call, giving a single, internally consistent 2024–2026 dataset
 
 **API path (implemented, available for future incremental syncs)**
