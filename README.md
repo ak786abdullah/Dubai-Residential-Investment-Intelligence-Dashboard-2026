@@ -238,7 +238,7 @@ MYSQL_PASSWORD=your_mysql_password
 
 **Get the data (current method: full CSV reload)**
 
-Download the complete transaction history as a bulk CSV export from [data.dubai](https://data.dubai). The export goes back further than the project needs, so filter it down to the **2024–2026** window before saving it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
+Download the complete transaction history as a bulk CSV export from [[data.dubai](https://data.dubai)](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035). The export goes back further than the project needs, so filter it down to the **2024–2026** window before saving it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
 
 **Run the pipeline**
 
