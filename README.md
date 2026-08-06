@@ -1,5 +1,3 @@
-<img width="624" height="344" alt="Screenshot 2026-08-05 112149" src="https://github.com/user-attachments/assets/e2875c96-74f4-4d2f-a393-e2c902962baa" />
-<img width="635" height="320" alt="Screenshot 2026-08-05 112117" src="https://github.com/user-attachments/assets/afe19931-c9aa-4aa1-8a60-2e49cbe1bdd3" />
 # Dubai Residential Real Estate — End-to-End Analytics Pipeline
 
 > **Bulk CSV → Python ETL → MySQL Data Warehouse → Power BI Dashboard**
@@ -8,11 +6,12 @@
 ---
 
 ## Dashboard Preview
+<img width="635" height="320" alt="Screenshot 2026-08-05 112117" src="https://github.com/user-attachments/assets/9cb4a4f5-15c1-4ac6-bce9-322276eeac0a" />
 
-![Dashboard Overview](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_overview.png)
 *KPI cards, MoM transaction trend, property type breakdown, and avg price/sqft by metro proximity — all driven by a live MySQL connection.*
 
-![Dashboard Map & Scatter](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_map.png)
+<img width="624" height="344" alt="Screenshot 2026-08-05 112149" src="https://github.com/user-attachments/assets/26e90d26-c9ad-4a8c-89de-b277b33496f6" />
+
 *Top 10 areas by transaction volume plotted on a Bing Maps visual, with avg price/sqft by property type and room count.*
 
 ---
