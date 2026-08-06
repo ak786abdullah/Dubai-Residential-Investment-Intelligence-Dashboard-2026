@@ -7,12 +7,10 @@
 
 ## Dashboard Preview
 
-<img width="635" height="320" alt="Screenshot 2026-08-05 112117" src="https://github.com/user-attachments/assets/9cb4a4f5-15c1-4ac6-bce9-322276eeac0a" />
-
+![Dashboard Overview](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_overview.png)
 *KPI cards, MoM transaction trend, property type breakdown, and avg price/sqft by metro proximity — all driven by a live MySQL connection.*
 
-<img width="624" height="344" alt="Screenshot 2026-08-05 112149" src="https://github.com/user-attachments/assets/26e90d26-c9ad-4a8c-89de-b277b33496f6" />
-
+![Dashboard Map & Scatter](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_map.png)
 *Top 10 areas by transaction volume plotted on a Bing Maps visual, with avg price/sqft by property type and room count.*
 
 ---
@@ -23,7 +21,7 @@ This project demonstrates a complete data engineering and analytics workflow bui
 
 The pipeline was originally built against the **Dubai Land Department (DLD) Open Data API** (OAuth2 auth, watermark-based delta loading). While validating 2026 coverage, I found that this endpoint is a **test/sandbox environment provided by data.dubai** — it returns valid, well-formed data, but only for the window **January 2024 – December 2025**. It does not expose 2026 transactions at all.
 
-To get complete, accurate coverage across 2024–2026, I downloaded the **entire historical transaction dataset as a single bulk CSV export directly from data.dubai**, and reran the ETL pipeline against that file **instead of the API**. The CSV is normalized to the same schema as the original API extract, so it flows through the exact same cleaning, feature-engineering, and star-schema loading logic — the transform and load phases don't know or care that the input changed.
+To get complete, accurate coverage across 2024–2026, I downloaded the **entire historical transaction dataset as a single bulk CSV export directly from data.dubai** — which extends further back than the project needs — then **filtered it down to the 2024–2026 window** to match the project's scope, and reran the ETL pipeline against that filtered file **instead of the API**. The CSV is normalized to the same schema as the original API extract, so it flows through the exact same cleaning, feature-engineering, and star-schema loading logic — the transform and load phases don't know or care that the input changed.
 
 The API extraction code (OAuth2 auth, watermark delta-load) is **still in the repo and still functional** — it's just not what populated the current warehouse. It's kept as the intended path for automated incremental refreshes once the account has access to a live (non-sandbox) feed.
 
@@ -44,7 +42,9 @@ DLD REST API (OAuth2, watermark delta-load, 2024–2025 only) ──► same ETL
 
 **Current run: full-history CSV reload**
 - The DLD API is a test/sandbox endpoint capped at December 2025; it does not surface current-year transactions
-- The pipeline was rerun end-to-end against this file in place of the API call, giving a single, internally consistent 2024–2026 dataset
+- The complete historical dataset (extending back well before 2024) was downloaded directly as a CSV export from the [data.dubai](https://data.dubai) open data portal
+- Filtered down to the **2024–2026 window** to match the project's scope — the same range the API was originally intended to serve
+- The pipeline was rerun end-to-end against this filtered file in place of the API call, giving a single, internally consistent 2024–2026 dataset
 
 **API path (implemented, available for future incremental syncs)**
 - Authenticates against the DLD API using OAuth2 client credentials flow, with token stored securely in a `.env` file
@@ -238,7 +238,7 @@ MYSQL_PASSWORD=your_mysql_password
 
 **Get the data (current method: full CSV reload)**
 
-Download the complete transaction history (2024–2026) as a bulk CSV export from [data.dubai](https://data.dubai) and save it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
+Download the complete transaction history as a bulk CSV export from [data.dubai](https://data.dubai). The export goes back further than the project needs, so filter it down to the **2024–2026** window before saving it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
 
 **Run the pipeline**
 
