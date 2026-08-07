@@ -60,7 +60,7 @@ DLD REST API (OAuth2, watermark delta-load, 2024–2025 only) ──► same ETL
 
 **Current run: full-history CSV reload**
 - The DLD API is a test/sandbox endpoint capped at December 2025; it does not surface current-year transactions
-- The complete historical dataset (extending back well before 2024) was downloaded directly as a CSV export from the [data.dubai](https://data.dubai) open data portal
+- The complete historical dataset (extending back well before 2024) was downloaded directly as a CSV export from the [[data.dubai](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035)]open data portal
 - Filtered down to the **2024–2026 window** to match the project's scope — the same range the API was originally intended to serve
 - The pipeline was rerun end-to-end against this filtered file in place of the API call, giving a single, internally consistent 2024–2026 dataset
 
@@ -256,7 +256,7 @@ MYSQL_PASSWORD=your_mysql_password
 
 **Get the data (current method: full CSV reload)**
 
-Download the complete transaction history as a bulk CSV export from [data.dubai](https://data.dubai). The export goes back further than the project needs, so filter it down to the **2024–2026** window before saving it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
+Download the complete transaction history as a bulk CSV export from [[data.dubai](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035)]. The export goes back further than the project needs, so filter it down to the **2024–2026** window before saving it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
 
 **Run the pipeline**
 
@@ -290,7 +290,7 @@ Open Power BI Desktop → Get Data → MySQL Database → connect to `localhost/
 
 ## Data Source
 
-- **data.dubai Open Data Portal** — full historical bulk CSV export (2024–2026), the current source for the fact table: [https://data.dubai](https://data.dubai)
+- **data.dubai Open Data Portal** — full historical bulk CSV export (2024–2026), the current source for the fact table: [[data.dubai](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035)]
 - **Dubai Land Department (DLD) Open Data API** — test/sandbox endpoint, 2024–2025 coverage only. Implemented and functional, but not currently used since it can't reach 2026 data. Access requires registration and approval through the DLD integration team; credentials are not included in this repository.
 
 ---
