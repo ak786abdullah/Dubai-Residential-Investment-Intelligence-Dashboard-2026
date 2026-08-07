@@ -7,13 +7,29 @@
 
 ## Dashboard Preview
 
-<img width="635" height="320" alt="Screenshot 2026-08-05 112117" src="https://github.com/user-attachments/assets/041baf44-7171-443a-83f3-bc37f60d9b0c" />
-
+![Dashboard Overview](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_overview.png)
 *KPI cards, MoM transaction trend, property type breakdown, and avg price/sqft by metro proximity — all driven by a live MySQL connection.*
 
-<img width="624" height="344" alt="Screenshot 2026-08-05 112149" src="https://github.com/user-attachments/assets/10532672-d2a0-40c0-9a2a-cb4b9471006c" />
-
+![Dashboard Map & Scatter](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_map.png)
 *Top 10 areas by transaction volume plotted on a Bing Maps visual, with avg price/sqft by property type and room count.*
+
+---
+
+## Investment Use Case: "Where Should AED 20M Go?"
+
+Most descriptive dashboards stop at reporting — total transactions, average price, month-over-month trend. This one is built so those numbers can actually support a decision: given a fixed budget, where does the data point?
+
+**1. Segment before looking at a single area.** Off-plan and existing (resale) transactions are filtered as separate market states via the `Status` slicer, and they don't move together. Comparing the two full years of data available: off-plan price/sqft rose from **AED1,688** (2024) to **AED1,810** (2025), a 7.2% gain. Existing/resale rose from **AED1,234** to **AED1,382** over the same period — 12%, nearly double the pace. The off-plan premium over resale narrowed from 37% to 31%. That's a materially different read than assuming off-plan is where all the growth is. (2026 figures are a partial year through August, and both segments show a sharp apparent drop in the final month — the dataset only has four days of August loaded so far, not a real reversal. It's a useful reminder to check completeness before trusting the last point on any MoM chart.)
+
+**2. Find where momentum actually is.** The "Top Performing Area By Transactions" card is DAX-driven and slicer-aware. Across the full 2024–2026 window, Al Barsha South Fourth leads. Filter to 2026 alone and leadership flips to **Madinat Al Mataar** — a signal that activity is shifting toward a newer area, not just concentrated in an established one.
+
+**3. Weigh volume against price, across several areas at once.** The Top 10 Areas map (full 2024–2026 history) makes the trade-off explicit: Madinat Al Mataar's transaction count (**13,723**) is nearly double Marsa Dubai's (**8,073**), at a much lower average price — **AED1,590.78/sqft** versus **AED2,407.01/sqft**. Madinat Dubai Almelaheyah sits at the other extreme: fewer transactions (**6,008**) but the highest price/sqft of the three, **AED2,728.66**. Three areas, three distinct volume-vs-premium profiles, directly comparable.
+
+**4. Pick the right configuration.** The "Avg Price per SqFt by Property Type and Rooms" scatter shows larger units (5–6 bedrooms) pricing well above the market average line, while 1–3 bedroom units sit in a tighter, more liquid band. For a AED 20M allocation, that's the difference between one large asset and a portfolio of smaller, more liquid units.
+
+**5. Quantify the amenity premium instead of assuming it.** Metro proximity: AED1,662.29/sqft vs AED1,615.37/sqft without. Mall proximity: AED1,664.72/sqft vs AED1,615.15/sqft without. Roughly a 3% premium either way — real, but not the dominant driver in this dataset.
+
+This doesn't output a single "buy here" answer, and it isn't meant to — that call belongs to the investor and their advisors, not a dashboard. What it does is compress a question that would otherwise mean pulling raw DLD data and cross-referencing it by hand into a filter-driven walkthrough, and it forces the market to be segmented properly (off-plan vs. resale, complete months vs. partial) before any trend line gets trusted.
 
 ---
 
@@ -44,7 +60,7 @@ DLD REST API (OAuth2, watermark delta-load, 2024–2025 only) ──► same ETL
 
 **Current run: full-history CSV reload**
 - The DLD API is a test/sandbox endpoint capped at December 2025; it does not surface current-year transactions
-- The complete historical dataset (extending back well before 2024) was downloaded directly as a CSV export from the [[data.dubai](https://data.dubai)](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035) open data portal
+- The complete historical dataset (extending back well before 2024) was downloaded directly as a CSV export from the [data.dubai](https://data.dubai) open data portal
 - Filtered down to the **2024–2026 window** to match the project's scope — the same range the API was originally intended to serve
 - The pipeline was rerun end-to-end against this filtered file in place of the API call, giving a single, internally consistent 2024–2026 dataset
 
@@ -240,7 +256,7 @@ MYSQL_PASSWORD=your_mysql_password
 
 **Get the data (current method: full CSV reload)**
 
-Download the complete transaction history as a bulk CSV export from [[data.dubai](https://data.dubai)](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035). The export goes back further than the project needs, so filter it down to the **2024–2026** window before saving it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
+Download the complete transaction history as a bulk CSV export from [data.dubai](https://data.dubai). The export goes back further than the project needs, so filter it down to the **2024–2026** window before saving it as `dld_transactions_2024_onwards.csv` in the project root — the same filename the API path used to populate. No separate script needed; the transform and load phases read whatever is in that file.
 
 **Run the pipeline**
 
@@ -274,7 +290,7 @@ Open Power BI Desktop → Get Data → MySQL Database → connect to `localhost/
 
 ## Data Source
 
-- **data.dubai Open Data Portal** — full historical bulk CSV export (2024–2026), the current source for the fact table: [[https://data.dubai](https://data.dubai)](https://data.dubai/en/l/470061?com_dda_issuingentity_details_issuingEntityIds=62035)
+- **data.dubai Open Data Portal** — full historical bulk CSV export (2024–2026), the current source for the fact table: [https://data.dubai](https://data.dubai)
 - **Dubai Land Department (DLD) Open Data API** — test/sandbox endpoint, 2024–2025 coverage only. Implemented and functional, but not currently used since it can't reach 2026 data. Access requires registration and approval through the DLD integration team; credentials are not included in this repository.
 
 ---
