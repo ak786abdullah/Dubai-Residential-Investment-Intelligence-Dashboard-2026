@@ -7,10 +7,12 @@
 
 ## Dashboard Preview
 
-![Dashboard Overview](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_overview.png)
+<img width="635" height="320" alt="Screenshot 2026-08-05 112117" src="https://github.com/user-attachments/assets/55887498-92b1-4d60-b6d9-c69003df2707" />
+
 *KPI cards, MoM transaction trend, property type breakdown, and avg price/sqft by metro proximity — all driven by a live MySQL connection.*
 
-![Dashboard Map & Scatter](https://github.com/ak786abdullah/Dubai-Residential-Investment-Intelligence-Dashboard-2026/raw/main/dashboard_map.png)
+<img width="624" height="344" alt="Screenshot 2026-08-05 112149" src="https://github.com/user-attachments/assets/97f3ed51-35a5-470a-b046-05ff23c4a55e" />
+
 *Top 10 areas by transaction volume plotted on a Bing Maps visual, with avg price/sqft by property type and room count.*
 
 ---
