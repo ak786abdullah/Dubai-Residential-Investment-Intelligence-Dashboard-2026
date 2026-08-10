@@ -214,19 +214,19 @@ data = data.astype({
 
 
 # fill NaN in property_sub_type_id with 6(Residential Land) where property_type_id == 1 (Land)  Becouse we have only residential data so, we impute "residential land" as  property_sub_type of "land"
-mask = (data['property_type_id'] == 1) & data['property_sub_type_id'].isna()
+mask = (data['property_type_id'] == 1) & (data['property_sub_type_id'].isna())
 data.loc[mask, 'property_sub_type_id'] = 6
 
 # fill NaN in property_sub_type_id with 4 where property_type_id == 4 (Villa) Becouse "Villa" has same property_type and property_sub_type
-mask = (data['property_type_id'] == 4) & data['property_sub_type_id'].isna()
+mask = (data['property_type_id'] == 4) & (data['property_sub_type_id'].isna())
 data.loc[mask, 'property_sub_type_id'] = 4 
 
 # fill NAN in rooms with "land" where property_type_id is 1 (Land) becouse land has no rooms
-mask = data['property_type_id'] == 1 & data['rooms'].isna()
+mask = (data['property_type_id'] == 1) & (data['rooms'].isna())
 data.loc[mask, 'rooms'] = 'land'
 
 # fill NaN in property_sub_type_id with 5 (Residential Building) where property_type_id == 2 (Building) Becouse we have only residential data so, we impute "residential building" as  property_sub_type of "building"
-mask = (data['property_type_id'] == 2) & data['property_sub_type_id'].isna()
+mask = (data['property_type_id'] == 2) & (data['property_sub_type_id'].isna())
 data.loc[mask, 'property_sub_type_id'] = 5 
 
 # fill NaN in project_number with 0 because it has no project (it is an independent property) and project_number is a numerical column so we impute it with 0 instead of "Independent Property"
@@ -239,19 +239,19 @@ data['project_name']=data['project_name'].fillna('Independent Property')
 data['master_project']=data['master_project'].fillna('Independent Property')
 
 # we impute "Villa" as building_name where property_type_id == 4 (Villa) becouse villa is not a building
-mask = (data['property_type_id'] == 4) & data['building_name'].isna()
+mask = (data['property_type_id'] == 4) & (data['building_name'].isna())
 data.loc[mask, 'building_name'] = 'Villa'
 
 # we impute "empty land" as building_name where property_type_id == 1 (Land) becouse land has no building
-mask = (data['property_type_id'] == 1) & data['building_name'].isna()
+mask = (data['property_type_id'] == 1) & (data['building_name'].isna())
 data.loc[mask, 'building_name'] = 'empty land' 
 
 # we impute "Independent Building" as building_name where property_type_id == 2 (Building) becouse it's a type of building
-mask = (data['property_type_id'] == 2) & data['building_name'].isna()
+mask = (data['property_type_id'] == 2) & (data['building_name'].isna())
 data.loc[mask, 'building_name'] = 'Independent Building' 
 
 # we impute "whole building" as rooms where property_type_id == 2 (Building)
-mask = (data['property_type_id'] == 2) & data['rooms'].isna()
+mask = (data['property_type_id'] == 2) & (data['rooms'].isna())
 data.loc[mask, 'rooms'] = 'whole building' 
 
 
