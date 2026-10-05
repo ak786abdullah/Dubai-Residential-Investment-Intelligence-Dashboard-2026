@@ -149,120 +149,181 @@ load_dotenv()
 # # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # read the raw data files into a pandas dataframe and the lookup tables into separate dataframes
-data=pd.read_csv("transactions_2026-08-04.csv")
-data1=pd.read_csv("lkp_areas.csv") 
-data2=pd.read_csv("lkp_property_sub_types.csv")
-data3=pd.read_csv("lkp_property_types.csv")
-data4=pd.read_csv("lkp_statuses.csv")
-data5=pd.read_csv("lkp_procedures.csv")
+data = pd.read_csv("raw_dld_transactions.csv")
+data1 = pd.read_csv("lkp_areas.csv")
+data2 = pd.read_csv("lkp_property_sub_types.csv")
+data3 = pd.read_csv("lkp_property_types.csv")
+data4 = pd.read_csv("lkp_statuses.csv")
+data5 = pd.read_csv("lkp_procedures.csv")
 
 print(f"\n===phase 1 complete: data extracted and loaded into pandas dataframe===")
+print(f"Raw data shape: {data.shape}")
+print(
+    f"max transaction date in raw data: {pd.to_datetime(data['instance_date'].max())}"
+)
+print(
+    f"min transaction date in raw data: {pd.to_datetime(data['instance_date'].min())}"
+)
+print(
+    f"Number of transactions from 2024-01-01 onwards: {data[pd.to_datetime(data['instance_date'])>='2024-01-01'].shape[0]}"
+)
 
-
-
-
-# ------------------------------------------------------------------------------------------------- 
+# -------------------------------------------------------------------------------------------------
 # -------------------------phase 2: data cleansing and transformation------------------------------
 # -------------------------------------------------------------------------------------------------
-
-
-
-
-
-
 
 # -----------------------------------------------------------------------------------------------------------------------------
 # step 1: DROP ARABIC COLUMNS , OTHER UNNECESSARY COLUMNS , RENAMING COLUMNS and FILTER FOR RESIDENTIAL AND SALES PROPERTIES ONLY
 # ------------------------------------------------------------------------------------------------------------------------------
 
 # I dropped the Arabic columns , the columns related to the number of parties involved and load_timestamp column because they are not relevant to our analysis.
-# I also dropped the rent_value and meter_rent_price columns because they are empty. 
+# I also dropped the rent_value and meter_rent_price columns because they are empty.
 # I dropped area_name_en,property_sub_type_en,reg_type_en,procedure_name_en ,property_type_en because we have lookup tables for them.
-data.drop(columns=['trans_group_ar','procedure_name_ar','procedure_name_en','property_sub_type_ar','property_sub_type_en','property_usage_ar','reg_type_ar','reg_type_en','area_name_ar','building_name_ar','project_name_ar','master_project_ar','nearest_landmark_ar','nearest_metro_ar','nearest_mall_ar','rooms_ar','property_type_ar','property_type_en','no_of_parties_role_1','no_of_parties_role_2','no_of_parties_role_3','load_timestamp','rent_value','meter_rent_price','area_name_en'], inplace=True) 
+data.drop(
+    columns=[
+        "trans_group_ar",
+        "procedure_name_ar",
+        "procedure_name_en",
+        "property_sub_type_ar",
+        "property_sub_type_en",
+        "property_usage_ar",
+        "reg_type_ar",
+        "reg_type_en",
+        "area_name_ar",
+        "building_name_ar",
+        "project_name_ar",
+        "master_project_ar",
+        "nearest_landmark_ar",
+        "nearest_metro_ar",
+        "nearest_mall_ar",
+        "rooms_ar",
+        "property_type_ar",
+        "property_type_en",
+        "no_of_parties_role_1",
+        "no_of_parties_role_2",
+        "no_of_parties_role_3",
+        "load_timestamp",
+        "rent_value",
+        "meter_rent_price",
+        "area_name_en",
+    ],
+    inplace=True,
+)
 
 # FILTER FOR RESIDENTIAL AND SALES PROPERTIES ONLY
-data = data[(data['property_usage_en'] == 'Residential') & (data['rooms_en'].isin(['Shop', 'Office']) == False) & (data['trans_group_en'] == 'Sales')] # FILTER FOR RESIDENTIAL PROPERTIES and sales , EXCLUDE SHOPS AND OFFICES
+data = data[
+    (data["property_usage_en"] == "Residential")
+    & (data["rooms_en"].isin(["Shop", "Office"]) == False)
+    & (data["trans_group_en"] == "Sales")
+]  # FILTER FOR RESIDENTIAL PROPERTIES and sales , EXCLUDE SHOPS AND OFFICES
 
 # we filtered for sales property now we can drop the trans_group_en, trans_group_id, property_usage_en columns because they will be the same for all rows
-data.drop(columns=['trans_group_en','trans_group_id','property_usage_en'], inplace=True)
+data.drop(
+    columns=["trans_group_en", "trans_group_id", "property_usage_en"], inplace=True
+)
 
 # RENAME COLUMNS
-data.rename(columns={'property_type_en':'property_type','reg_type_id':'status_id','building_name_en':'building_name','project_name_en':'project_name','master_project_en':'master_project','nearest_landmark_en':'nearest_landmark','nearest_metro_en':'nearest_metro','nearest_mall_en':'nearest_mall','instance_date':'transaction_date','actual_worth':'price','rooms_en':'rooms'}, inplace=True)
+data.rename(
+    columns={
+        "property_type_en": "property_type",
+        "reg_type_id": "status_id",
+        "building_name_en": "building_name",
+        "project_name_en": "project_name",
+        "master_project_en": "master_project",
+        "nearest_landmark_en": "nearest_landmark",
+        "nearest_metro_en": "nearest_metro",
+        "nearest_mall_en": "nearest_mall",
+        "instance_date": "transaction_date",
+        "actual_worth": "price",
+        "rooms_en": "rooms",
+    },
+    inplace=True,
+)
 
 # we filter 2024 onwards data only because we want to analyze the most recent data and the older data is not relevant to our analysis.
-data['transaction_date'] = pd.to_datetime(data['transaction_date'], errors='coerce')
-data = data[data['transaction_date'].dt.year >= 2024]
+data["transaction_date"] = pd.to_datetime(data["transaction_date"], errors="coerce")
+data = data[data["transaction_date"].dt.year >= 2024]
 
+print(
+    f"Number of transactions from 2024-01-01 onwards after Residential filter: {data.shape[0]}"
+)
 # ------------------------------------------------------------------------------------------------
 # STEP 2: DROP DUPLICATES  CHANGE DATA TYPES AND HANDLE MISSING VALUES
 # ------------------------------------------------------------------------------------------------
 
 # drop duplicates
-data = data.drop_duplicates(subset=['transaction_id']) # transaction_id is a unique identifier for each transaction, so we drop duplicates based on it to ensure data integrity.
+print(
+    f"Number of duplicate rows in raw data: {data.duplicated(subset=['transaction_id']).sum()}"
+)
+data = data.drop_duplicates(
+    subset=["transaction_id"]
+)  # transaction_id is a unique identifier for each transaction, so we drop duplicates based on it to ensure data integrity.
 
 # CHANGE OTHER COLUMNS DATA TYPES
 # Convert id columns to smallest nullable integer dtypes and boolean flags in one pass
-data = data.astype({
-    'procedure_id': 'UInt16',
-    'area_id': 'UInt16',
-    'property_type_id': 'UInt8',
-    'property_sub_type_id': 'UInt8',
-    'project_number': 'UInt16',
-    'has_parking': 'boolean',
-    'status_id': 'boolean'
-})
+data = data.astype(
+    {
+        "procedure_id": "UInt16",
+        "area_id": "UInt16",
+        "property_type_id": "UInt8",
+        "property_sub_type_id": "UInt8",
+        "project_number": "UInt16",
+        "has_parking": "boolean",
+        "status_id": "boolean",
+    }
+)
 
 
 # fill NaN in property_sub_type_id with 6(Residential Land) where property_type_id == 1 (Land)  Becouse we have only residential data so, we impute "residential land" as  property_sub_type of "land"
-mask = (data['property_type_id'] == 1) & (data['property_sub_type_id'].isna())
-data.loc[mask, 'property_sub_type_id'] = 6
+mask = (data["property_type_id"] == 1) & (data["property_sub_type_id"].isna())
+data.loc[mask, "property_sub_type_id"] = 6
 
 # fill NaN in property_sub_type_id with 4 where property_type_id == 4 (Villa) Becouse "Villa" has same property_type and property_sub_type
-mask = (data['property_type_id'] == 4) & (data['property_sub_type_id'].isna())
-data.loc[mask, 'property_sub_type_id'] = 4 
+mask = (data["property_type_id"] == 4) & (data["property_sub_type_id"].isna())
+data.loc[mask, "property_sub_type_id"] = 4
 
 # fill NAN in rooms with "land" where property_type_id is 1 (Land) becouse land has no rooms
-mask = (data['property_type_id'] == 1) & (data['rooms'].isna())
-data.loc[mask, 'rooms'] = 'land'
+mask = (data["property_type_id"] == 1) & (data["rooms"].isna())
+data.loc[mask, "rooms"] = "land"
 
 # fill NaN in property_sub_type_id with 5 (Residential Building) where property_type_id == 2 (Building) Becouse we have only residential data so, we impute "residential building" as  property_sub_type of "building"
-mask = (data['property_type_id'] == 2) & (data['property_sub_type_id'].isna())
-data.loc[mask, 'property_sub_type_id'] = 5 
+mask = (data["property_type_id"] == 2) & (data["property_sub_type_id"].isna())
+data.loc[mask, "property_sub_type_id"] = 5
 
 # fill NaN in project_number with 0 because it has no project (it is an independent property) and project_number is a numerical column so we impute it with 0 instead of "Independent Property"
-data['project_number']=data['project_number'].fillna(0) 
+data["project_number"] = data["project_number"].fillna(0)
 
 # fill NaN in project_name with "Independent Property" because it is not part of any project
-data['project_name']=data['project_name'].fillna('Independent Property') 
+data["project_name"] = data["project_name"].fillna("Independent Property")
 
 # fill NaN in master_project with "Independent Property" because it is not part of any master project
-data['master_project']=data['master_project'].fillna('Independent Property')
+data["master_project"] = data["master_project"].fillna("Independent Property")
 
 # we impute "Villa" as building_name where property_type_id == 4 (Villa) becouse villa is not a building
-mask = (data['property_type_id'] == 4) & (data['building_name'].isna())
-data.loc[mask, 'building_name'] = 'Villa'
+mask = (data["property_type_id"] == 4) & (data["building_name"].isna())
+data.loc[mask, "building_name"] = "Villa"
 
 # we impute "empty land" as building_name where property_type_id == 1 (Land) becouse land has no building
-mask = (data['property_type_id'] == 1) & (data['building_name'].isna())
-data.loc[mask, 'building_name'] = 'empty land' 
+mask = (data["property_type_id"] == 1) & (data["building_name"].isna())
+data.loc[mask, "building_name"] = "empty land"
 
 # we impute "Independent Building" as building_name where property_type_id == 2 (Building) becouse it's a type of building
-mask = (data['property_type_id'] == 2) & (data['building_name'].isna())
-data.loc[mask, 'building_name'] = 'Independent Building' 
+mask = (data["property_type_id"] == 2) & (data["building_name"].isna())
+data.loc[mask, "building_name"] = "Independent Building"
 
 # we impute "whole building" as rooms where property_type_id == 2 (Building)
-mask = (data['property_type_id'] == 2) & (data['rooms'].isna())
-data.loc[mask, 'rooms'] = 'whole building' 
+mask = (data["property_type_id"] == 2) & (data["rooms"].isna())
+data.loc[mask, "rooms"] = "whole building"
 
 
 # we will impute the missing values in rooms column for villas and units using the median area of each room category for villas and units respectively.
 # We will use a mathematical function to find the nearest room category based on the area of the property.
 
 # 1. Isolate the data where we actually know the villa sizes and room counts
-known_villas = data[(data['property_type_id'] == 4) & (data['rooms'].notna())]
+known_villas = data[(data["property_type_id"] == 4) & (data["rooms"].notna())]
 
 # 2. Calculate the median area for each room category within Villas
-villa_room_medians = known_villas.groupby('rooms')['procedure_area'].median()
+villa_room_medians = known_villas.groupby("rooms")["procedure_area"].median()
 
 # 3. Create a mathematical function to find the nearest room category
 def get_closest_room(area_value, median_series):
@@ -271,76 +332,88 @@ def get_closest_room(area_value, median_series):
     # Return the index (the room category string) with the smallest distance
     return differences.idxmin()
 
+
 # 4. Create a mask for the rows we need to fix
-missing_villas_mask = (data['property_type_id'] == 4) & (data['rooms'].isna())
+missing_villas_mask = (data["property_type_id"] == 4) & (data["rooms"].isna())
 
 # 5. Apply the function only to the missing rows
-data.loc[missing_villas_mask, 'rooms'] = data.loc[missing_villas_mask, 'procedure_area'].apply(
-    lambda x: get_closest_room(x, villa_room_medians)
-)
+data.loc[missing_villas_mask, "rooms"] = data.loc[
+    missing_villas_mask, "procedure_area"
+].apply(lambda x: get_closest_room(x, villa_room_medians))
 
-# repeat this exact same logic for missing 'Unit's rooms' rows as well 
-known_units = data[(data['property_type_id'] == 3) & (data['rooms'].notna())]
-unit_room_medians = known_units.groupby('rooms')['procedure_area'].median()
+# repeat this exact same logic for missing 'Unit's rooms' rows as well
+known_units = data[(data["property_type_id"] == 3) & (data["rooms"].notna())]
+unit_room_medians = known_units.groupby("rooms")["procedure_area"].median()
 
-missing_units_mask = (data['property_type_id'] == 3) & (data['rooms'].isna())
-data.loc[missing_units_mask, 'rooms'] = data.loc[missing_units_mask, 'procedure_area'].apply(
-    lambda x: get_closest_room(x, unit_room_medians)
-) 
+missing_units_mask = (data["property_type_id"] == 3) & (data["rooms"].isna())
+data.loc[missing_units_mask, "rooms"] = data.loc[
+    missing_units_mask, "procedure_area"
+].apply(lambda x: get_closest_room(x, unit_room_medians))
 
 # -------------------------------------------------------------------------------------------------
 # step 3: STANDARIZE COLUMNS,FEATURE ENGINEERING AND CREATE NEW COLUMNS
 # --------------------------------------------------------------------------------------------------
 
-# remove "B/R" if it exists, then strip whitespace 
+# remove "B/R" if it exists, then strip whitespace
 # It use regex=False by default to ensure it treats "B/R" as a literal string and not a regex pattern.
-data['rooms']=data['rooms'].str.replace("B/R",'').str.strip() 
+data["rooms"] = data["rooms"].str.replace("B/R", "").str.strip()
 
 # single room is 1
-data['rooms']=data['rooms'].replace('Single Room','1')
+data["rooms"] = data["rooms"].replace("Single Room", "1")
 
 # strip whitespace and capitalize first letter of each word in rooms column
-data['rooms']=data['rooms'].str.strip().str.title() # capitalize first letter of each word
+data["rooms"] = (
+    data["rooms"].str.strip().str.title()
+)  # capitalize first letter of each word
 
 
 # create a new column has_nearest_metro that is True if nearest_metro is not null and False if it is null
-data['has_nearest_metro']=data['nearest_metro'].apply(lambda x: True if x is not np.nan else False)
+data["has_nearest_metro"] = data["nearest_metro"].apply(
+    lambda x: True if x is not np.nan else False
+)
 # drop nearest_metro column because we have the new column has_nearest_metro that contains the same information in a more useful format
-data.drop(columns=['nearest_metro'], inplace=True) 
+data.drop(columns=["nearest_metro"], inplace=True)
 
 # create a new column has_nearest_landmark that is True if nearest_landmark is not null and False if it is null
-data['has_nearest_landmark']=data['nearest_landmark'].apply(lambda x: True if x is not np.nan else False)
+data["has_nearest_landmark"] = data["nearest_landmark"].apply(
+    lambda x: True if x is not np.nan else False
+)
 # drop nearest_landmark column because we have the new column has_nearest_landmark that contains the same information in a more useful format
-data.drop(columns=['nearest_landmark'], inplace=True)
+data.drop(columns=["nearest_landmark"], inplace=True)
 
 # create a new column has_nearest_mall that is True if nearest_mall is not null and False if it is null
-data['has_nearest_mall']=data['nearest_mall'].apply(lambda x: True if x is not np.nan else False)
+data["has_nearest_mall"] = data["nearest_mall"].apply(
+    lambda x: True if x is not np.nan else False
+)
 # drop nearest_mall column because we have the new column has_nearest_mall that contains the same information in a more useful format
-data.drop(columns=['nearest_mall'], inplace=True)  
+data.drop(columns=["nearest_mall"], inplace=True)
 
 
 # procedure_area is given in square meters, we will convert it to square feet by multiplying it by 10.7639, then round to 2 decimal places
-data['property_size_sqft'] = (data['procedure_area'] * 10.7639).round(2) # convert area from square meters to square feet by multiplying by 10.7639
+data["property_size_sqft"] = (data["procedure_area"] * 10.7639).round(
+    2
+)  # convert area from square meters to square feet by multiplying by 10.7639
 # drop the original procedure_area column because we have the new property_size_sqft column that contains the same information in a more useful format
-data.drop(columns=['procedure_area'], inplace=True) 
+data.drop(columns=["procedure_area"], inplace=True)
 
 # create a new column for price per square foot by dividing price by area and rounding to 2 decimal places
-data['price_per_sqft'] = (data['price'] / data['property_size_sqft']).round(2) 
+data["price_per_sqft"] = (data["price"] / data["property_size_sqft"]).round(2)
 # drop meter_price column because we have the new price_per_sqft column that contains the same information in a more useful format
-data.drop(columns=['meter_sale_price'], inplace=True)
+data.drop(columns=["meter_sale_price"], inplace=True)
 
 # --------------------------------------------------------------------------------------------
 # STEP 4: HANDLE OUTLIERS AND MARKET ANOMALIES IN PRICE PER SQUARE FOOT BY PROPERTY TYPE
 # --------------------------------------------------------------------------------------------
 
+
 def run_real_estate_pipeline(
     df,
-    amount_col='price',
-    area_col='property_size_sqft',
-    price_col='price_per_sqft',
-    type_col='property_type_id',
+    amount_col="price",
+    area_col="property_size_sqft",
+    price_col="price_per_sqft",
+    type_col="property_type_id",
     type_map=None,
-    area_unit='sqft'
+    area_unit="sqft",
 ):
     """
     Executes a 3-step real estate data cleansing pipeline
@@ -357,26 +430,26 @@ def run_real_estate_pipeline(
     initial_rows = len(df_working)
 
     if type_map is None:
-        type_map = {1: 'Land', 2: 'Building', 3: 'Unit', 4: 'Villa'}
+        type_map = {1: "Land", 2: "Building", 3: "Unit", 4: "Villa"}
 
     market_limits = {
-        'Unit': (300, 15000),
-        'Villa': (400, 10000),
-        'Land': (50, 5000),
-        'Building': (300, 5000)
+        "Unit": (300, 15000),
+        "Villa": (400, 10000),
+        "Land": (50, 5000),
+        "Building": (300, 5000),
     }
 
     if df_working[type_col].dtype == object:
-        df_working['_property_type_label'] = df_working[type_col]
+        df_working["_property_type_label"] = df_working[type_col]
     else:
-        df_working['_property_type_label'] = df_working[type_col].map(type_map)
+        df_working["_property_type_label"] = df_working[type_col].map(type_map)
 
     valid_records = []
     recovered_count = 0
     dropped_count = 0
 
     for prop_name, (min_limit, max_limit) in market_limits.items():
-        group_mask = df_working['_property_type_label'] == prop_name
+        group_mask = df_working["_property_type_label"] == prop_name
         df_group = df_working[group_mask].copy()
 
         if df_group.empty:
@@ -393,18 +466,28 @@ def run_real_estate_pipeline(
         df_recovered = pd.DataFrame()
 
         if not df_group_errors.empty:
-            can_recalculate = (amount_col in df_group_errors.columns) and (area_col in df_group_errors.columns)
+            can_recalculate = (amount_col in df_group_errors.columns) and (
+                area_col in df_group_errors.columns
+            )
 
             if can_recalculate:
-                valid_area_mask = (df_group_errors[area_col] > 0) & df_group_errors[area_col].notna()
+                valid_area_mask = (df_group_errors[area_col] > 0) & df_group_errors[
+                    area_col
+                ].notna()
                 df_to_recalc = df_group_errors[valid_area_mask].copy()
 
-                if area_unit == 'sqm':
-                    df_to_recalc[price_col] = df_to_recalc[amount_col] / (df_to_recalc[area_col] * 10.764)
+                if area_unit == "sqm":
+                    df_to_recalc[price_col] = df_to_recalc[amount_col] / (
+                        df_to_recalc[area_col] * 10.764
+                    )
                 else:
-                    df_to_recalc[price_col] = df_to_recalc[amount_col] / df_to_recalc[area_col]
+                    df_to_recalc[price_col] = (
+                        df_to_recalc[amount_col] / df_to_recalc[area_col]
+                    )
 
-                now_valid_mask = (df_to_recalc[price_col] >= min_limit) & (df_to_recalc[price_col] <= max_limit)
+                now_valid_mask = (df_to_recalc[price_col] >= min_limit) & (
+                    df_to_recalc[price_col] <= max_limit
+                )
                 df_recovered = df_to_recalc[now_valid_mask]
 
                 if not df_recovered.empty:
@@ -428,8 +511,12 @@ def run_real_estate_pipeline(
         upper_fence = Q3 + 1.5 * IQR
         return group_series.clip(lower=lower_fence, upper=upper_fence)
 
-    df_validated[f'{price_col}_capped'] = df_validated.groupby('_property_type_label')[price_col].transform(cap_group_outliers)
-    capped_count = (df_validated[price_col] != df_validated[f'{price_col}_capped']).sum()
+    df_validated[f"{price_col}_capped"] = df_validated.groupby("_property_type_label")[
+        price_col
+    ].transform(cap_group_outliers)
+    capped_count = (
+        df_validated[price_col] != df_validated[f"{price_col}_capped"]
+    ).sum()
 
     print(f"1. Rows Analyzed:         {initial_rows}")
     print(f"2. Rows Forensically Saved: {recovered_count}")
@@ -437,10 +524,17 @@ def run_real_estate_pipeline(
     print(f"4. Valid Rows Remaining:   {len(df_validated)}")
     print(f"5. Luxury Outliers Capped: {capped_count}")
 
-    df_validated.drop(columns=['_property_type_label'], inplace=True)
+    df_validated.drop(columns=["_property_type_label"], inplace=True)
     return df_validated
 
-data= run_real_estate_pipeline(data, amount_col='price', area_col='property_size_sqft', price_col='price_per_sqft', type_col='property_type_id')
+
+data = run_real_estate_pipeline(
+    data,
+    amount_col="price",
+    area_col="property_size_sqft",
+    price_col="price_per_sqft",
+    type_col="property_type_id",
+)
 
 print(f"\n=== phase 2 complete : data Cleaned And Transformed")
 
@@ -450,16 +544,20 @@ print(f"\n=== phase 2 complete : data Cleaned And Transformed")
 # -------------------------------------------------------------------------------------------------
 
 
-
 # We will use SQLAlchemy to connect to the MySQL database and load the cleaned data into it.
 # We will also check if the lookup tables already exist in the database before loading them to avoid
 db_password = os.getenv("MYSQL_PASSWORD")
 connection_string = f"mysql+pymysql://root:{db_password}@localhost/real_estate_db"
-engine = create_engine(connection_string) 
+engine = create_engine(connection_string)
 
 # 1. Load the main daily transaction data (Replace the database table with the newly cleansed master dataset)
 print("Loading daily transaction data...")
-data.to_sql('cleaned_residential_real_estate_sale_data', con=engine, if_exists='replace', index=False)
+data.to_sql(
+    "cleaned_residential_real_estate_sale_data",
+    con=engine,
+    if_exists="replace",
+    index=False,
+)
 
 # 2. Check and load Lookup Tables conditionally
 print("Checking lookup tables...")
@@ -469,19 +567,20 @@ inspector = inspect(engine)
 
 # Map your lookup table names to their respective DataFrames
 lookup_mapping = {
-    'lkp_areas': data1,
-    'lkp_property_sub_types': data2,
-    'lkp_property_types': data3,
-    'lkp_statuses': data4,
-    'lkp_procedures': data5
+    "lkp_areas": data1,
+    "lkp_property_sub_types": data2,
+    "lkp_property_types": data3,
+    "lkp_statuses": data4,
+    "lkp_procedures": data5,
 }
 
 # Loop through the mapping and only upload if the table is missing
 for table_name, df in lookup_mapping.items():
     if not inspector.has_table(table_name):
         print(f" -> Table '{table_name}' not found. Uploading...")
-        df.to_sql(table_name, con=engine, if_exists='replace', index=False)
+        df.to_sql(table_name, con=engine, if_exists="replace", index=False)
     else:
         print(f" -> Table '{table_name}' already exists. Skipping upload.")
 
 print("\nPhase 3 Complete: Data successfully loaded into MySQL database!")
+
