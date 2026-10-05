@@ -409,4 +409,4 @@ Power BI Desktop → Get Data → MySQL Database → `localhost` / `real_estate_
 **Abdullah** · Data & BI Analyst · Dubai, UAE
 Open to Data / BI Analyst opportunities in the UAE.
 
-[LinkedIn]([https://www.linkedin.com/in/your-profile](https://www.linkedin.com/in/muhammad-abdullah-a7861a3a2/)) · [GitHub]([https://github.com/your-username](https://github.com/ak786abdullah))
+[LinkedIn](https://www.linkedin.com/in/muhammad-abdullah-a7861a3a2/) · [GitHub]([https://github.com/your-username](https://github.com/ak786abdullah))
