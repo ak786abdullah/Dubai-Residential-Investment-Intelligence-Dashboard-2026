@@ -23,16 +23,20 @@ An end-to-end analytics system built on Dubai Land Department (DLD) transaction 
 
 ## Dashboard preview
 
-![Overview page](images/01-overview.png)
+<img width="644" height="362" alt="overview" src="https://github.com/user-attachments/assets/48ac41e2-f71a-420c-bb69-b91f3bb679e2" />
+
 *Overview: KPI cards, transactions by property type, median price/sqft by metro proximity, month-over-month trend, and Status / Year slicers.*
 
-![Existing (resale) market](images/02-resale-market.png)
+<img width="665" height="349" alt="existing" src="https://github.com/user-attachments/assets/a2145fae-e3fb-4db4-90c5-6307418c754b" />
+
 *Status = Existing: every visual recalculates, including the DAX-driven headline sentence.*
 
-![Off-plan, 2026](images/03-off-plan-2026.png)
+<img width="768" height="347" alt="offplan 2026" src="https://github.com/user-attachments/assets/6fb2a3d3-3aa3-45d3-b7a7-aaa60419c54d" />
+
 *Status = Off-Plan and Year = 2026: the Top Performing Area card flips to Madinat Al Mataar.*
 
-![Top 10 areas map](images/04-top-areas-map.png)
+<img width="631" height="349" alt="area" src="https://github.com/user-attachments/assets/47cf083f-c718-444c-9664-c40654fc3bbf" />
+
 *Top 10 areas by transaction volume on a Bing Maps visual, median price/sqft by property type and bedroom count, and the mall-proximity comparison.*
 
 ## Investment use case: "Where should AED 20M go?"
