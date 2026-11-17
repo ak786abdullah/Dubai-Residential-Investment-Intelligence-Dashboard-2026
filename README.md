@@ -281,17 +281,91 @@ One fact table (`residential real estate sale data`, loaded from the MySQL fact 
 ```dax
 Median Price per SqFt = MEDIAN('residential real estate sale data'[price per sqft])
 
-Existing Median =
+Existing Median price =
 CALCULATE(
     [Median Price per SqFt],
     'status'[status] = "Existing"
 )
 
-Off-plan Median =
+Existing Price with growth = 
+VAR FirstYear =
+    CALCULATE(
+        MIN('Date'[Year]),
+        REMOVEFILTERS('Date')
+    )
+
+VAR LastYear =
+    CALCULATE(
+        MAX('Date'[Year]),
+        REMOVEFILTERS('Date')
+    )
+
+VAR FirstValue =
+    CALCULATE(
+        [Existing Median],
+        REMOVEFILTERS('Date'),
+        'Date'[Year] = FirstYear
+    )
+
+VAR LastValue =
+    CALCULATE(
+        [Existing Median],
+        REMOVEFILTERS('Date'),
+        'Date'[Year] = LastYear
+    )
+
+VAR Growth =
+    FORMAT(DIVIDE(LastValue - FirstValue, FirstValue),"0.00%")
+
+RETURN
+    IF(
+        ISINSCOPE('Date'[Year]),
+        [Existing Median],
+        Growth
+    )
+
+Off-plan Median price =
 CALCULATE(
     [Median Price per SqFt],
     'status'[status] = "Off plan"
-)
+) 
+
+Off-plan Price WITH Growth = 
+VAR FirstYear =
+    CALCULATE(
+        MIN('Date'[Year]),
+        REMOVEFILTERS('Date')
+    )
+
+VAR LastYear =
+    CALCULATE(
+        MAX('Date'[Year]),
+        REMOVEFILTERS('Date')
+    )
+
+VAR FirstValue =
+    CALCULATE(
+        [Off-plan Median],
+        REMOVEFILTERS('Date'),
+        'Date'[Year] = FirstYear
+    )
+
+VAR LastValue =
+    CALCULATE(
+        [Off-plan Median],
+        REMOVEFILTERS('Date'),
+        'Date'[Year] = LastYear
+    )
+
+VAR Growth =
+    FORMAT(DIVIDE(LastValue - FirstValue, FirstValue),"0.00%")
+
+RETURN
+    IF(
+        ISINSCOPE('Date'[Year]),
+        [Off-plan Median],
+        Growth
+    )
 
 Off Plan vs Existing % =
 VAR OffPlan = [Off-plan Median]
