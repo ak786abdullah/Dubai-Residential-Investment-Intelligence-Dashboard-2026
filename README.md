@@ -24,19 +24,23 @@ An end-to-end analytics system built on Dubai Land Department (DLD) transaction 
 
 **Overview.** Slicers for Property Status, Year and Property Type with a Reset button; KPI cards (leading area, transactions, sales, median price per sqft); monthly transactions against median price per sqft; top 10 areas by transactions; transaction mix by property type; median price per sqft by number of rooms; and the off-plan vs existing premium by year.
 
-![Overview](images/01-overview.png)
+<img width="434" height="292" alt="OVER VIEW " src="https://github.com/user-attachments/assets/b013fd4b-0ffb-4f74-b81d-f907ee5fc994" />
+
 
 **Year-over-year growth.** With no year selected the KPI cards prompt for one. Once a year is chosen, each card shows its change against the prior year.
 
-![Off-plan with year selected](images/02-offplan-year-yoy.png)
+<img width="445" height="305" alt="2" src="https://github.com/user-attachments/assets/bb7030b3-5f8a-4be5-bb42-159fd7f40c83" />
+
 
 **Segment recalculation.** Setting Property Type to Unit recalculates the whole page, including the premium table (the off-plan premium over resale on units falls from 44.00% in 2024 to 25.95% in 2026).
 
-![Unit view](images/03-unit-premium-table.png)
+<img width="440" height="300" alt="3" src="https://github.com/user-attachments/assets/5f34566d-3ad3-4329-9e4e-46c1a539f5fc" />
+
 
 **Drill-through: Top 10 Areas Details.** Right-click an area on the overview to open a matrix for that area: transactions, total sales and median price per sqft, split Existing vs Off Plan, expandable from year to quarter to month.
 
-![Area drill-through](images/04-area-drill-through.png)
+<img width="436" height="291" alt="4" src="https://github.com/user-attachments/assets/3abbbe0c-f119-4d68-acc5-24d09954a447" />
+
 
 ## Investment use case: "Where should AED 20M go?"
 
@@ -116,7 +120,8 @@ The refresh is repeatable. Consecutive runs against re-downloaded exports:
 
 ## Architecture
 
-![Architecture](images/00-architecture.png)
+<img width="1396" height="598" alt="00-architecture" src="https://github.com/user-attachments/assets/1e609b98-fc5b-481f-ab65-3d99ad997e73" />
+
 
 ## Pipeline walkthrough
 
@@ -241,7 +246,8 @@ The same pattern (type alignment → primary key → foreign key) is repeated fo
 
 ## Data model (star schema)
 
-![Power BI star schema model](images/05-star-schema-model.png)
+<img width="410" height="268" alt="05-star-schema-model" src="https://github.com/user-attachments/assets/225ac0e5-54b1-46b0-b8d3-93e35be2921b" />
+
 
 One fact table (`residential real estate sale data`, loaded from the MySQL fact table) and six dimensions: `Date`, `areas`, `property types`, `property sub types`, `procedures` and `status`. Every relationship is one-to-many from the dimension to the fact table, so each dimension filters the fact table and nothing filters back. Table and column names are tidied for readability inside Power BI (for example `price_per_sqft` appears as `price per sqft`).
 
@@ -444,7 +450,6 @@ RETURN
 
 ```
 ├── etl_pipeline.py                 # Main ETL script (extract → transform → load)
-├── dld_transactions_bulk.csv       # Full bulk export from data.dubai (gitignored)
 ├── lkp_areas.csv                   # Area dimension lookup
 ├── lkp_property_sub_types.csv      # Property sub-type lookup
 ├── lkp_property_types.csv          # Property type lookup
